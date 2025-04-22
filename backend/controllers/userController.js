@@ -1,0 +1,206 @@
+import User from "../models/userModel.js"
+import Post from "../models/postModel.js";
+import bcrypt from "bcryptjs";
+import { generateTokenAndSetCookie } from "../utils/helpers/generateTokenAndSetCookie.js";
+import { v2 as cloudinary} from 'cloudinary'
+
+const getUser = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({ error: "Please provide username" });
+    }
+
+    const user = await User.findOne({username}).select("-password -__v -createdAt -updatedAt");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const followerUsers = await User.find({
+      _id: { $in: user.followers },
+    }).select("name profilePic");
+    
+    const followingUsers = await User.find({
+      _id: { $in: user.following },
+    }).select("name profilePic");
+    
+    const userObj = user.toObject();
+    userObj.followers = followerUsers;
+    userObj.following = followingUsers;
+
+    const userPosts = await Post.find({postedBy: user._id}).sort({ createdAt: -1 });
+    for (const post of userPosts) {
+      await post.populate([
+          { path: 'postedBy', select: 'name username profilePic' },
+          { path: 'likes', select: 'name profilePic' },
+          { path: 'replies.user', select: 'name username profilePic' }
+      ])
+    }
+
+    res.status(200).json({user : {user: userObj, userPosts}});
+  } catch (error) {
+    console.error("Error during get user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const signupUser = async (req, res) => {
+  try {
+    const { name, email, username, password } = req.body;
+
+    if(!name || !email || !username || !password) {
+      return res.status(400).json({ error: "Please fill all fields" });
+    }
+
+    const user = await User.findOne({ $or: [ {email}, {username} ] });
+    if(user) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = await User.create({
+      name,
+      email,
+      username,
+      password: hashedPassword
+    })
+
+    if (newUser) {
+      const token = generateTokenAndSetCookie(newUser._id, res);
+      newUser.password = null;
+      res.status(201).json({newUser});
+    } else {
+      res.status(400).json({ error: "Invalid user data" });
+    }
+
+  } catch (error) {
+    console.error("Error during signup:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Please fill all fields" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const token = generateTokenAndSetCookie(user._id, res);
+    user.password = null;
+    res.status(200).json({user});
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("token", { httpOnly: true, secure: true });
+    res.status(200).json({ message: "User logged out successfully" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const followUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Please provide a id" });
+    }
+
+    const userToFollow = await User.findById(id);
+    if (!userToFollow) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const currentUser = await User.findById(req.user._id);
+    if (!currentUser) {
+      return res.status(404).json({ error: "Current user not found" });
+    }
+
+    if( id.toString() === req.user._id.toString()) {
+      return res.status(400).json({ error: "You cannot follow yourself" });
+    }
+
+    if (currentUser.following.includes(id)) {
+      await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+      await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
+      res.status(200).json({ message: "Unfollowed user successfully" });
+    } else {
+      await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+      await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
+      res.status(200).json({ message: "Followed user successfully" });
+    }
+  } catch (error) {
+    console.error("Error during follow:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, username, password, bio, profilePic } = req.body;
+
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    name && (user.name = name);
+    email && (user.email = email);
+    username && (user.username = username);
+    bio && (user.bio = bio);
+
+    if(profilePic) {
+      if(user.profilePic) {
+        await cloudinary.uploader.destroy(user.profilePic.split("/").pop().split(".")[0]);
+      }
+      const uploadedResponse = await cloudinary.uploader.upload(profilePic);
+      user.profilePic = uploadedResponse.secure_url;
+    }
+    
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    await Post.updateMany(
+      {"replies.user": userId},
+      {
+        $set: {
+          "replies.$[reply].username": user.username,
+          "replies.$[reply].userProfilePic": user.profilePic,
+        }
+      },
+      {arrayFilters: [{"reply.user": userId}]}
+    )
+
+    user.password = null;
+    res.status(200).json({user});
+  } catch (error) {
+    console.error("Error during user update:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export { getUser, signupUser, loginUser, logoutUser, followUser, updateUser };
