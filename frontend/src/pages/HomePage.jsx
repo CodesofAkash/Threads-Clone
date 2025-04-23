@@ -21,7 +21,6 @@ const HomePage = () => {
 					showToast("Error", data.error, "error");
 					return;
 				}
-				console.log(data);
 				setPosts(data.feedPosts);
 			} catch (error) {
 				showToast("Error", error.message, "error");
@@ -47,15 +46,6 @@ const HomePage = () => {
 					<Post key={post._id} post={post} />
 				))}
 			</Box>
-			{/* <Box
-				flex={30}
-				display={{
-					base: "none",
-					md: "block",
-				}}
-			>
-				<SuggestedUsers />
-			</Box> */}
 		</Flex>
 	);
 };

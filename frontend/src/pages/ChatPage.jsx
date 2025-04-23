@@ -1,11 +1,112 @@
 import { Box, Button, Flex, Input, Skeleton, SkeletonCircle, Text, useColorModeValue } from '@chakra-ui/react'
 import {SearchIcon} from '@chakra-ui/icons'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Conversation from '../components/Conversation'
 import {GiConversation} from 'react-icons/gi'
 import MessageContainer from '../components/MessageContainer'
+import useShowToast from '../hooks/useShowToast'
+import { conversationsAtom, selectedConversationAtom } from '../atoms/messagesAtom'
+import { useRecoilState, useRecoilValue } from 'recoil'
+import userAtom from '../atoms/userAtom'
 
 const ChatPage = () => {
+
+  const showToast = useShowToast();
+
+  const [selectedConversation, setSelectedConversation] = useRecoilState(selectedConversationAtom);
+
+  const [conversations, setConversations] = useRecoilState(conversationsAtom);
+  const [loading, setLoading] = useState(false);
+  const [convoLoading, setConvoLoading] = useState(false);
+
+  const [searchText, setSearchText] = useState("");
+
+  const user = useRecoilValue(userAtom);
+
+  useEffect(() => {
+    const getConversations = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/messages/conversations`);
+        const data = await res.json();
+        if(data.error) {
+         showToast("Error", data.error, "error");
+         return;
+        }
+        setConversations(data.conversations);
+      } catch (error) {
+        showToast("Error", error.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+    getConversations();
+  }, [showToast, setConversations]);
+
+  const handleConversationSearch = async (e) => {
+    e?.preventDefault();
+    setConvoLoading(true);
+      try {
+        const res = await fetch(`/api/users/profile/${searchText}`);
+        const data = await res.json();
+        if(data.error) {
+          showToast("Error", data.error, "error");
+          setSearchText("");
+        }
+        const searchedUser = data.user.user;
+
+        const messagingYourself = searchedUser._id === user._id;
+        if(messagingYourself) {
+          showToast("Error", "You cannot message yourself", "error");
+          setSearchText("");
+          return;
+        }
+
+        const conversationAlreadyExists = conversations.find(conversation => conversation.participants[0]._id === searchedUser._id);
+        if(conversationAlreadyExists) {
+          setSelectedConversation({
+            _id: conversationAlreadyExists._id,
+            userId: searchedUser._id,
+            username: searchedUser.username,
+            profilePic: searchedUser.profilePic
+          });
+          setSearchText("");
+          return;
+        }
+
+        const mockConversation = {
+          mock: true,
+          lastMessage: {
+            text: "",
+            sender: ""
+          },
+          _id: Date.now(),
+          participants: [
+            {
+              _id: searchedUser._id,
+              username: searchedUser.username,
+              profilePic: searchedUser.profilePic
+            }
+          ]
+        }
+
+        setConversations((prev) => [mockConversation, ...prev]);
+        setSelectedConversation({
+          _id: mockConversation._id,
+          userId: mockConversation.participants[0]._id,
+          username: mockConversation.participants[0].username,
+          profilePic: mockConversation.participants[0].profilePic,
+          mock: mockConversation.mock
+        })
+
+        setSearchText("");
+      } catch (error) {
+        showToast("Error", error.message, "error");
+      } finally {
+        setConvoLoading(false);
+      }
+  }
+
   return (
     <Box position={"absolute"} left={"50%"} transform={"translateX(-50%)"} w={{
       base: "100%", md: "%", lg: "750px"
@@ -19,14 +120,18 @@ const ChatPage = () => {
             <Text fontWeight={700} color={useColorModeValue("gray.600", "gray.400")}>
               Your Conversations
             </Text>
-            <form>
+            <form onSubmit={handleConversationSearch}>
               <Flex alignItems={"center"} gap={2}>
-                <Input placeholder='Search for a user' />
-                <Button size={"sm"}><SearchIcon /></Button>
+                <Input placeholder='Search for a user' onChange={(e) => setSearchText(e.target.value)} value={searchText}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleConversationSearch(e);
+                }}
+                />
+                <Button onClick={handleConversationSearch} isLoading={convoLoading} size={"sm"}><SearchIcon /></Button>
               </Flex>
             </form>
 
-            {false && (
+            {loading && (
               [0,1,2,3,4,].map((_, i) => 
                 <Flex key={i} gap={4} alignItems={"center"} p={1} borderRadius={"md"}>
                   <Box>
@@ -40,18 +145,22 @@ const ChatPage = () => {
               ))
             }
 
-            <Conversation />
-            <Conversation />
-            <Conversation />
+            {!loading && 
+              conversations?.map((conversation, i) => (
+                <Conversation key={i} conversation={conversation} />
+              ))
+            }
 
           </Flex>
           
-          {false && (<Flex flex={70} borderRadius={"md"} p={2} flexDirection={"column"} alignItems={"center"} justifyContent={"center"} h={"400px"} >
-            <GiConversation size={100} />
-            <Text fontSize={20}>Select a conversation to start messaging</Text>
-          </Flex>)}
+          {!selectedConversation._id && (
+            <Flex flex={70} borderRadius={"md"} p={2} flexDirection={"column"} alignItems={"center"} justifyContent={"center"} h={"400px"} >
+              <GiConversation size={100} />
+              <Text fontSize={20}>Select a conversation to start messaging</Text>
+            </Flex>
+        )}
 
-          <Flex flex={70}><MessageContainer /></Flex>
+          {selectedConversation._id && <Flex flex={70}><MessageContainer /></Flex>}
 
         </Flex>
     </Box>

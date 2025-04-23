@@ -26,13 +26,13 @@ export const sendMessage = async (req, res) => {
             text: message
         });
 
-        conversation = await Conversation.findByIdAndUpdate(conversation._id, {lastMessage: {text: message, sender: senderId} }, {new: true});
+        await Conversation.findByIdAndUpdate(conversation._id, {lastMessage: {text: message, sender: senderId} });
 
         if(!newMessage) {
             return res.status(500).json({error: 'Message '})
         }
 
-        res.status(201).json({message: "Message sent successfully", newMessage, conversation});
+        res.status(201).json({message: "Message sent successfully", newMessage});
 
     } catch (error) {
         res.status(500).json({error: error.message});
@@ -46,9 +46,14 @@ export const getConversations = async (req, res) => {
             path: "participants",
             select: "username profilePic"
         }).sort({ updatedAt: -1 });
+
         if(!conversations) {
             return res.status(500).json({error: "User has no conversations."});
         }
+
+        conversations.forEach(conversation => {
+            conversation.participants = conversation.participants.filter(participant => participant._id.toString() !== userId.toString());
+        });
 
         res.status(200).json({message: "conversations found successfully", conversations});
     } catch (error) {
@@ -63,13 +68,10 @@ export const getMessages = async (req, res) => {
     try {
         const conversation = await Conversation.findOne({participants: {$all: [otherUserId, userId]}});
         if(!conversation) {
-            return res.staus(404).json({error: "Conversation not found"});
+            return res.status(404).json({error: "Conversation not found"});
         }
 
         const messages = await Message.find({conversationId: conversation._id}).sort({createdAt: 1});
-        if(!messages) {
-            return res.staus(500).json({error: "Users have no messages"});
-        }
 
         res.status(200).json({message: "Messages Found", messages});
 

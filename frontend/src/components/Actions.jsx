@@ -12,7 +12,6 @@ const Actions = ({ post }) => {
 
 	const [posts, setPosts] = useRecoilState(postsAtom);
 	const [liked, setLiked] = useState(post.likes.includes(user?._id));
-	console.log("like status",post?.likes?.includes(user?._id))
 
 	const [loading, setLoading] = useState();
 
@@ -63,8 +62,9 @@ const Actions = ({ post }) => {
 	const [replyLoading, setReplyLoading] = useState(false);
 	const initialRef = useRef();
 
-	const handleReply = useCallback ( async () => {
+	const handleReply = useCallback ( async (e) => {
 		setReplyLoading(true);
+		e?.preventDefault();
 		try {
 			const res = await fetch(`/api/posts/reply/${post._id}`, {
 				method: "POST",
@@ -162,7 +162,7 @@ const Actions = ({ post }) => {
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
-              <Input ref={initialRef} placeholder='Comment your thoughts' value={reply} onChange={(e) => setReply(e.target.value)} />
+              <Input ref={initialRef} placeholder='Comment your thoughts' value={reply} onKeyDown={(e) => e.key === 'Enter' && handleReply(e)} onChange={(e) => setReply(e.target.value)} />
             </FormControl>
           </ModalBody>
 

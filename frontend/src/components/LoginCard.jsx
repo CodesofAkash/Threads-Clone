@@ -19,7 +19,8 @@ export default function LoginCard() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e?.preventDefault();
     if(loading) return;
     setLoading(true);
     try {
@@ -56,6 +57,7 @@ export default function LoginCard() {
             Login
           </Heading>
         </Stack>
+        <form onSubmit={handleLogin}>
         <Box rounded={'lg'} bg={useColorModeValue('white', 'gray.dark')} boxShadow={'lg'} p={8} w={{base: "full", sm: "400px"}}>
           <Stack spacing={4}>
             <FormControl isRequired>
@@ -65,7 +67,9 @@ export default function LoginCard() {
             <FormControl isRequired>
               <FormLabel>Password</FormLabel>
               <InputGroup>
-                <Input type={showPassword ? 'text' : 'password'} value={inputs.password} onChange={(e) => setInputs({...inputs, password: e.target.value})} />
+                <Input type={showPassword ? 'text' : 'password'} value={inputs.password} onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleLogin(e);
+                    }} onChange={(e) => setInputs({...inputs, password: e.target.value})} />
                 <InputRightElement h={'full'}>
                   <Button
                     variant={'ghost'}
@@ -87,6 +91,7 @@ export default function LoginCard() {
             </Stack>
           </Stack>
         </Box>
+        </form>
       </Stack>
     </Flex>
   )

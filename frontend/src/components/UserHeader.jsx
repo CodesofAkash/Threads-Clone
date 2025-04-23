@@ -17,6 +17,11 @@ const UserHeader = ({user}) => {
     const [followed, setFollowed] = useState(false);
     const [loadingFollowStatus, setLoadingFollowStatus] = useState(true);
 
+    const shouldTruncate = bio.length > 150;
+    const [showMore, setShowMore] = useState(false);
+    const toggleBio = () => setShowMore(!showMore);
+
+
     useEffect(() => {
         const checkFollowStatus = async () => {
             try {
@@ -104,7 +109,24 @@ const UserHeader = ({user}) => {
             </Box>
         </Flex>
 
-        <Text>{bio}</Text>
+        <Flex flexDir={"column"} justifyContent={"center"} alignItems={"start"}>
+            <Text>
+                {shouldTruncate && !showMore ? `${bio.substring(0,150)}...` : bio}
+            </Text>
+
+            {shouldTruncate && (
+            <Button
+            variant="link"
+            color="blue.500"
+            size="sm"
+            onClick={toggleBio}
+            mt={1}
+            >
+            {showMore ? "Show less" : "Show more"}
+            </Button>
+            )}
+       </Flex>
+
 
         {currentUser._id === user._id ? (
             <Link as={RouterLink} to="/update">

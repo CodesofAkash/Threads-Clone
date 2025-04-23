@@ -21,7 +21,8 @@ export default function SignupCard() {
 
   const [loading, setLoading] = useState(false);
 
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e?.preventDefault();
     if(loading) return;
     setLoading(true);
     try {
@@ -80,7 +81,9 @@ export default function SignupCard() {
             <FormControl isRequired>
               <FormLabel>Password</FormLabel>
               <InputGroup>
-                <Input type={showPassword ? 'text' : 'password'} onChange={(e) => setInputs({...inputs, password: e.target.value})} value={inputs.password} />
+                <Input type={showPassword ? 'text' : 'password'}                     onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSignup(e);
+                    }} onChange={(e) => setInputs({...inputs, password: e.target.value})} value={inputs.password} />
                 <InputRightElement h={'full'}>
                   <Button
                     variant={'ghost'}
