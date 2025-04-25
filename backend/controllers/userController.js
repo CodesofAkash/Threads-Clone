@@ -45,6 +45,30 @@ const getUser = async (req, res) => {
   }
 }
 
+const getSuggestedUsers = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const usersFollowedByYou = await User.findById(userId).select("following");
+
+    const users = await User.aggregate([
+      {
+        $match: {
+        _id: {$ne : userId},
+        }
+      }, {
+        $sample: {size: 10}
+      }
+    ]);
+
+    const filteredUsers = users.filter((user) => !usersFollowedByYou.following.includes(user._id));
+    const suggestedUsers = filteredUsers.slice(0,5);
+    suggestedUsers.forEach(user => user.password = null);
+    res.status(200).json(suggestedUsers);
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
+}
+
 const signupUser = async (req, res) => {
   try {
     const { name, email, username, password } = req.body;
@@ -100,6 +124,12 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateTokenAndSetCookie(user._id, res);
+
+    if(user.isFrozen) {
+      user.isFrozen = false;
+      await user.save();
+    }
+  
     user.password = null;
     res.status(200).json({user});
   } catch (error) {
@@ -203,4 +233,19 @@ const updateUser = async (req, res) => {
   }
 }
 
-export { getUser, signupUser, loginUser, logoutUser, followUser, updateUser };
+const freezeAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if(!user) return res.status(404).json({ error: "User not found" });
+
+    user.isFrozen = true;
+    await user.save();
+
+    res.status(200).json({ success : true });
+
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export { getUser, getSuggestedUsers, signupUser, loginUser, logoutUser, followUser, updateUser, freezeAccount };

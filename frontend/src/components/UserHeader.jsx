@@ -3,45 +3,23 @@ import { BsInstagram } from "react-icons/bs"
 import { CgMoreO } from "react-icons/cg"
 import {useRecoilValue} from 'recoil'
 import userAtom from '../atoms/userAtom.js'
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import useShowToast from "../hooks/useShowToast.js"
 import { Link as RouterLink } from "react-router-dom"
+import useFollow from "../hooks/useFollow.js"
 
 const UserHeader = ({user}) => {
-    const currentUser = useRecoilValue(userAtom);
-
-    const showToast = useShowToast()
 
     const {name, username, bio, profilePic, followers, following} = user;
 
-    const [followed, setFollowed] = useState(false);
-    const [loadingFollowStatus, setLoadingFollowStatus] = useState(true);
+    const currentUser = useRecoilValue(userAtom);
+
+    const {followUser, updating, followed} = useFollow(user);
+    const showToast = useShowToast();
 
     const shouldTruncate = bio.length > 150;
     const [showMore, setShowMore] = useState(false);
-    const toggleBio = () => setShowMore(!showMore);
-
-
-    useEffect(() => {
-        const checkFollowStatus = async () => {
-            try {
-                const res = await fetch(`/api/users/follow-status/${user._id}`);
-                const data = await res.json();
-                setFollowed(data.followed);
-            } catch (err) {
-                console.error("Failed to check follow status", err);
-            } finally {
-                setLoadingFollowStatus(false);
-            }
-        };
-
-        if (user && user._id !== currentUser._id) {
-            checkFollowStatus();
-        }
-    }, [user, user._id, currentUser._id]);
-
-
-    const [updating, setUpdating] = useState(false);
+    const toggleBio = () => setShowMore(!showMore)
 
     const copyUrl = () => {
         const currentUrl = window.location.href;
@@ -49,42 +27,8 @@ const UserHeader = ({user}) => {
             showToast("Link copied to clipboard", currentUrl, "success");
         }).catch(err => {
             showToast("Error", err.message, "error");
-        });
+        })
     }
-
-    
-    const followUser = async () => {
-        if(!currentUser) {
-            showToast("Error", "Please login to follow", "error");
-            return;
-        }
-        if(updating) return;
-        setUpdating(true);
-        try {
-            const res = await fetch(`/api/users/follow/${user._id}`);
-            const data = await res.json();
-            if(data.error) {
-                showToast("Error", data.error, "error");
-                return;
-            }
-
-            //simulating adding and removing followers, it only affects client side
-            if(followed) {
-                showToast("Success", `Unfollowed ${user.name}`, "success");
-                user.followers.pop();
-            } else {
-                showToast("Success", `Followed ${user.name}`, "success");
-                user.followers.push(currentUser._id);
-            }
-
-            setFollowed(!followed);
-        } catch (error) {
-            showToast("Error", error.message, "error");
-        } finally {
-            setUpdating(false);
-        }    
-    };
-
 
   return (
     <VStack gap={4} alignItems={"start"}>
@@ -127,13 +71,12 @@ const UserHeader = ({user}) => {
             )}
        </Flex>
 
-
-        {currentUser._id === user._id ? (
+        { currentUser?._id === user._id ? (
             <Link as={RouterLink} to="/update">
                 <Button size="sm">Update Profile</Button>
             </Link>
         ) : (
-            <Button onClick={followUser} isLoading={updating || loadingFollowStatus}>{followed? 'Unfollow' : 'Follow'}</Button>
+            <Button size={"sm"} onClick={followUser} isLoading={updating}>{followed? 'Unfollow' : 'Follow'}</Button>
         )}
 
         <Flex w={"full"} justifyContent={"space-between"}>

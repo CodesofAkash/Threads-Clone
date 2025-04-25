@@ -31,6 +31,10 @@ const UserPage = () => {
           showToast("Error", data.error, "error");
           return;
         }
+        if(data.user.user.isFrozen) {
+          setUser(null);
+          return;
+        }
         setUser(data.user.user);
         setPosts(data.user.userPosts);
       } catch (error) {

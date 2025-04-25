@@ -7,7 +7,8 @@ import { RxAvatar } from 'react-icons/rx'
 import { FiLogOut, FiSearch } from 'react-icons/fi'
 import { useState } from 'react';
 import useLogout from '../hooks/useLogout';
-import {BsFillChatQuoteFill} from 'react-icons/bs' 
+import {BsFillChatQuoteFill} from 'react-icons/bs'
+import {MdOutlineSettings} from 'react-icons/md'
 
 const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -48,23 +49,6 @@ const Header = () => {
 
       {user && (
         <Flex align={"center"} gap={4}>
-          <Link as={RouterLink} to={`/${user.username}`}>
-            <RxAvatar size={24} />
-          </Link>
-
-          <Link as={RouterLink} to={`/chat`}>
-            <BsFillChatQuoteFill size={20} />
-          </Link>
-
-          <Button size={"sm"} onClick={logout}>
-            <FiLogOut size={20} />
-          </Button>
-
-          <FiSearch
-            size={20}
-            cursor="pointer"
-            onClick={() => setShowSearch(prev => !prev)}
-          />
 
           {showSearch && (
             <Input
@@ -78,6 +62,27 @@ const Header = () => {
               borderRadius={"md"}
             />
           )}
+          <FiSearch
+            size={20}
+            cursor="pointer"
+            onClick={() => setShowSearch(prev => !prev)}
+          />
+
+          <Link as={RouterLink} to={`/chat`}>
+            <BsFillChatQuoteFill size={20} />
+          </Link>
+
+          <Link as={RouterLink} to={`/${user.username}`}>
+            <RxAvatar size={24} />
+          </Link>
+
+          <Link as={RouterLink} to={`/settings`}>
+            <MdOutlineSettings size={20} />
+          </Link>
+
+          <Button size={"sm"} onClick={logout}>
+            <FiLogOut size={20} />
+          </Button>
         </Flex>
       )}
     </Flex>
