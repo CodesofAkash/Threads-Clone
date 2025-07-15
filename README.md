@@ -33,7 +33,7 @@ A full-stack social media application built with React, Node.js, Express, and Mo
 
 Add these environment variables to your Vercel dashboard:
 
-- `MONGODB_URI` - Your MongoDB connection string
+- `MONGO_URI` - Your MongoDB connection string
 - `JWT_SECRET` - JWT secret key for token generation
 - `CLOUDINARY_CLOUD_NAME` - Cloudinary cloud name
 - `CLOUDINARY_API_KEY` - Cloudinary API key
