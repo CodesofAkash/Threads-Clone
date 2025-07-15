@@ -38,10 +38,10 @@ const getUser = async (req, res) => {
       ])
     }
 
-    res.status(200).json({user : {user: userObj, userPosts}});
+    return res.status(200).json({user : {user: userObj, userPosts}});
   } catch (error) {
     console.error("Error during get user:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -63,9 +63,9 @@ const getSuggestedUsers = async (req, res) => {
     const filteredUsers = users.filter((user) => !usersFollowedByYou.following.includes(user._id));
     const suggestedUsers = filteredUsers.slice(0,5);
     suggestedUsers.forEach(user => user.password = null);
-    res.status(200).json(suggestedUsers);
+    return res.status(200).json(suggestedUsers);
   } catch (error) {
-    res.status(500).json({error: error.message});
+    return res.status(500).json({error: error.message});
   }
 }
 
@@ -95,14 +95,14 @@ const signupUser = async (req, res) => {
     if (newUser) {
       const token = generateTokenAndSetCookie(newUser._id, res);
       newUser.password = null;
-      res.status(201).json({newUser});
+      return res.status(201).json({newUser});
     } else {
-      res.status(400).json({ error: "Invalid user data" });
+      return res.status(400).json({ error: "Invalid user data" });
     }
 
   } catch (error) {
     console.error("Error during signup:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -131,20 +131,20 @@ const loginUser = async (req, res) => {
     }
   
     user.password = null;
-    res.status(200).json({user});
+    return res.status(200).json({user});
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
 const logoutUser = async (req, res) => {
   try {
     res.clearCookie("token", { httpOnly: true, secure: true });
-    res.status(200).json({ message: "User logged out successfully" });
+    return res.status(200).json({ message: "User logged out successfully" });
   } catch (error) {
     console.error("Error during logout:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -172,15 +172,15 @@ const followUser = async (req, res) => {
     if (currentUser.following.includes(id)) {
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-      res.status(200).json({ message: "Unfollowed user successfully" });
+      return res.status(200).json({ message: "Unfollowed user successfully" });
     } else {
       await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
       await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-      res.status(200).json({ message: "Followed user successfully" });
+      return res.status(200).json({ message: "Followed user successfully" });
     }
   } catch (error) {
     console.error("Error during follow:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -226,10 +226,10 @@ const updateUser = async (req, res) => {
     )
 
     user.password = null;
-    res.status(200).json({user});
+    return res.status(200).json({user});
   } catch (error) {
     console.error("Error during user update:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 
@@ -241,10 +241,10 @@ const freezeAccount = async (req, res) => {
     user.isFrozen = true;
     await user.save();
 
-    res.status(200).json({ success : true });
+    return res.status(200).json({ success : true });
 
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

@@ -39,7 +39,7 @@ export const sendMessage = async (req, res) => {
         await Conversation.findByIdAndUpdate(conversation._id, {lastMessage: {text: message, sender: senderId} });
 
         if(!newMessage) {
-            return res.status(500).json({error: 'Message '})
+            return res.status(500).json({error: 'Message creation failed'})
         }
 
         const recipientSocketId = getRecipientSocketId(recipientId);
@@ -47,10 +47,10 @@ export const sendMessage = async (req, res) => {
             io.to(recipientSocketId).emit("newMessage", newMessage);
         }
 
-        res.status(201).json({message: "Message sent successfully", newMessage});
+        return res.status(201).json({message: "Message sent successfully", newMessage});
 
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -70,9 +70,9 @@ export const getConversations = async (req, res) => {
             conversation.participants = conversation.participants.filter(participant => participant._id.toString() !== userId.toString());
         });
 
-        res.status(200).json({message: "conversations found successfully", conversations});
+        return res.status(200).json({message: "conversations found successfully", conversations});
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -88,9 +88,9 @@ export const getMessages = async (req, res) => {
 
         const messages = await Message.find({conversationId: conversation._id}).sort({createdAt: 1});
 
-        res.status(200).json({message: "Messages Found", messages});
+        return res.status(200).json({message: "Messages Found", messages});
 
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }

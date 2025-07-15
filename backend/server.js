@@ -25,11 +25,21 @@ app.use(express.json({limit: "50mb"}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({ message: "API is working!" });
+});
+
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/messages", messageRoutes);
 
+// For Vercel serverless functions
+export default app;
 
-server.listen(PORT, () => {
-  console.log(`Server is running on PORT http://localhost:${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(PORT, () => {
+    console.log(`Server is running on PORT http://localhost:${PORT}`);
+  });
+}

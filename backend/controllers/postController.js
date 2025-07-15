@@ -47,7 +47,7 @@ export const createPost = async (req, res) => {
             post
         });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error: error.message,
         });
@@ -66,7 +66,7 @@ export const getPost = async (req, res) => {
 
         res.status(200).json({post})
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -89,7 +89,7 @@ export const deletePost = async (req, res) => {
         await Post.findByIdAndDelete(req.params.id);
         res.status(200).json({message: "Post deleted successfully"})
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -106,15 +106,15 @@ export const likePost = async (req, res) => {
         const userLikedPost = post.likes.includes(userId);
         if(userLikedPost) {
             await Post.updateOne({_id: postId}, {$pull: {likes: userId}});
-            res.status(200).json({message: "Post unliked Successfully"});
+            return res.status(200).json({message: "Post unliked Successfully"});
         } else{
             post.likes.push(userId);
             await post.save();
-            res.status(200).json({message: "Post liked Successfully"});
+            return res.status(200).json({message: "Post liked Successfully"});
         }
 
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -136,9 +136,9 @@ export const replyPost = async (req, res) => {
         const reply = {user: userId, text: message, username: req.user.username, profilePic: req.user.profilePic};
         post.replies.push(reply);
         await post.save();
-        res.status(200).json(reply);
+        return res.status(200).json(reply);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
 
@@ -162,6 +162,6 @@ export const getFeedPosts = async (req, res) => {
         }
         res.status(200).json({feedPosts});
     } catch (error) {
-        res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
 }
