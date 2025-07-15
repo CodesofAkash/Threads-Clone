@@ -10,8 +10,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: process.env.NODE_ENV === 'production' 
-            ? ["https://threads-clone-frontend-codesofakashs-projects.vercel.app"] 
-            : ["http://localhost:3000"],
+            ? process.env.FRONTEND_URL || "http://localhost:3000"
+            : ["http://localhost:3000", "http://localhost:5173"],
         methods: ["GET", "POST"]
     }
 });

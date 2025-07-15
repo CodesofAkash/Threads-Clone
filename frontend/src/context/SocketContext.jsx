@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState  } from "react";
 import io from 'socket.io-client'
 import userAtom from '../atoms/userAtom.js'
 import { useRecoilValue } from "recoil";
+import { SOCKET_URL } from "../config/api";
 
 const SocketContext = createContext();
 
@@ -16,7 +17,7 @@ export const SocketContextProvider = ({children}) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
 
     useEffect(() => {
-        const socket = io(import.meta.env.PROD ? "https://threads-clone-backend-codesofakashs-projects.vercel.app" : "http://localhost:5000", {
+        const socket = io(SOCKET_URL, {
             query: {
                 userId: user?._id,
             }
