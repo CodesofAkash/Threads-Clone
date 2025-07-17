@@ -29,6 +29,18 @@ const getUser = async (req, res) => {
     userObj.followers = followerUsers;
     userObj.following = followingUsers;
 
+    // Check if the current user is following this profile user
+    let isFollowing = false;
+    if (req.user && req.user._id) {
+      const currentUser = await User.findById(req.user._id);
+      if (currentUser) {
+        isFollowing = currentUser.following.some(followingId => 
+          followingId.toString() === user._id.toString()
+        );
+      }
+    }
+    userObj.isFollowing = isFollowing;
+
     const userPosts = await Post.find({postedBy: user._id}).sort({ createdAt: -1 });
     for (const post of userPosts) {
       await post.populate([
@@ -170,13 +182,35 @@ const followUser = async (req, res) => {
     }
 
     if (currentUser.following.includes(id)) {
+      // Unfollow
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-      return res.status(200).json({ message: "Unfollowed user successfully" });
+      
+      // Get updated user data
+      const updatedUserToFollow = await User.findById(id).select("-password -__v -createdAt -updatedAt");
+      const updatedCurrentUser = await User.findById(req.user._id).select("-password -__v -createdAt -updatedAt");
+      
+      return res.status(200).json({ 
+        message: "Unfollowed user successfully",
+        isFollowing: false,
+        userToFollow: updatedUserToFollow,
+        currentUser: updatedCurrentUser
+      });
     } else {
+      // Follow
       await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
       await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-      return res.status(200).json({ message: "Followed user successfully" });
+      
+      // Get updated user data
+      const updatedUserToFollow = await User.findById(id).select("-password -__v -createdAt -updatedAt");
+      const updatedCurrentUser = await User.findById(req.user._id).select("-password -__v -createdAt -updatedAt");
+      
+      return res.status(200).json({ 
+        message: "Followed user successfully",
+        isFollowing: true,
+        userToFollow: updatedUserToFollow,
+        currentUser: updatedCurrentUser
+      });
     }
   } catch (error) {
     console.error("Error during follow:", error);

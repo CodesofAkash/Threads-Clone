@@ -62,6 +62,8 @@ export const getPost = async (req, res) => {
         }
         await post.populate([
             { path: 'postedBy', select: 'name username profilePic' },
+            { path: 'likes', select: 'name profilePic' },
+            { path: 'replies.user', select: 'name username profilePic' }
         ]);
 
         res.status(200).json({post})
@@ -105,12 +107,34 @@ export const likePost = async (req, res) => {
 
         const userLikedPost = post.likes.includes(userId);
         if(userLikedPost) {
+            // Unlike the post
             await Post.updateOne({_id: postId}, {$pull: {likes: userId}});
-            return res.status(200).json({message: "Post unliked Successfully"});
+            const updatedPost = await Post.findById(postId).populate([
+                { path: 'postedBy', select: 'name username profilePic' },
+                { path: 'likes', select: '_id' },
+                { path: 'replies.user', select: 'name username profilePic' }
+            ]);
+            return res.status(200).json({
+                message: "Post unliked Successfully",
+                isLiked: false,
+                likesCount: updatedPost.likes.length,
+                post: updatedPost
+            });
         } else{
+            // Like the post
             post.likes.push(userId);
             await post.save();
-            return res.status(200).json({message: "Post liked Successfully"});
+            const updatedPost = await Post.findById(postId).populate([
+                { path: 'postedBy', select: 'name username profilePic' },
+                { path: 'likes', select: '_id' },
+                { path: 'replies.user', select: 'name username profilePic' }
+            ]);
+            return res.status(200).json({
+                message: "Post liked Successfully",
+                isLiked: true,
+                likesCount: updatedPost.likes.length,
+                post: updatedPost
+            });
         }
 
     } catch (error) {
@@ -136,7 +160,19 @@ export const replyPost = async (req, res) => {
         const reply = {user: userId, text: message, username: req.user.username, profilePic: req.user.profilePic};
         post.replies.push(reply);
         await post.save();
-        return res.status(200).json(reply);
+        
+        // Return the updated post with proper population
+        const updatedPost = await Post.findById(postId).populate([
+            { path: 'postedBy', select: 'name username profilePic' },
+            { path: 'likes', select: '_id' },
+            { path: 'replies.user', select: 'name username profilePic' }
+        ]);
+        
+        return res.status(200).json({
+            message: "Reply added successfully",
+            reply: reply,
+            post: updatedPost
+        });
     } catch (error) {
         return res.status(500).json({error: error.message});
     }

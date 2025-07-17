@@ -17,6 +17,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "backend": "file:..",
+    "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "framer-motion": "^6.5.1",
     "react": "^18.2.0",

@@ -1,5 +1,5 @@
 import { Box, Button, Flex, FormControl, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Spinner, Text, useDisclosure } from "@chakra-ui/react"
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import {useRecoilState, useRecoilValue} from 'recoil'
 import userAtom from '../atoms/userAtom'
 import useShowToast from '../hooks/useShowToast.js'
@@ -11,9 +11,24 @@ const Actions = ({ post }) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const [posts, setPosts] = useRecoilState(postsAtom);
-	const [liked, setLiked] = useState(post.likes.includes(user?._id));
+	const [liked, setLiked] = useState(() => {
+		if (!user || !post?.likes) return false;
+		return post.likes.some(like => 
+			typeof like === 'string' ? like === user._id : like._id === user._id
+		);
+	});
 
-	const [loading, setLoading] = useState();
+	const [loading, setLoading] = useState(false);
+
+	// Sync liked state when post changes
+	useEffect(() => {
+		if (user && post?.likes) {
+			const isLiked = post.likes.some(like => 
+				typeof like === 'string' ? like === user._id : like._id === user._id
+			);
+			setLiked(isLiked);
+		}
+	}, [post.likes, user]);
 
 	const handleLike =  async (e) => {
 		e.preventDefault();
@@ -23,34 +38,41 @@ const Actions = ({ post }) => {
 		}
 		if(loading) return;
 		setLoading(true);
+		
+		// Store current state for rollback
+		const currentLiked = liked;
+		
+		// Optimistic update
+		setLiked(!currentLiked);
+		
 		try {
 			const res = await fetch(`/api/posts/like/${post?._id}`);
 			const data = await res.json();
 			if(data.error) {
+				// Rollback optimistic update
+				setLiked(currentLiked);
 				showToast("Error", data.error, "error");
 				return;
 			}
 
-			if(!liked) {
-				const updatedPosts = posts.map((p) => {
-					if(p._id === post._id) {
-						return { ...p, likes: [...p.likes, user._id]};
-					}
-					return p;
-				});
+			// Update the global posts state with the backend response
+			const updatedPosts = posts.map((p) => {
+				if(p._id === post._id) {
+					return { 
+						...p, 
+						likes: data.post.likes // Use actual backend data
+					};
+				}
+				return p;
+			});
 			setPosts(updatedPosts);
-			} else  {
-				const updatedPosts = posts.map((p) => {
-					if(p._id === post._id) {
-						return {...p, likes: p.likes.filter((id) => id!== user._id)};
-					}
-					return p;
-				})
-			setPosts(updatedPosts);
-			}
-			setLiked(!liked);
-			showToast("Success", data.message, "success")
+			
+			// Set the liked state from backend response
+			setLiked(data.isLiked);
+			showToast("Success", data.message, "success");
 		} catch (error) {
+			// Rollback optimistic update
+			setLiked(currentLiked);
 			showToast("Error", error.message, "error");
 		} finally {
 			setLoading(false);
@@ -80,10 +102,13 @@ const Actions = ({ post }) => {
 			}
 			const updatedPosts = posts.map(p => {
 				if(p._id === post._id) {
-					return {...p, replies: [data, ...p.replies]};
+					return {
+						...p, 
+						replies: data.post.replies // Use actual backend data
+					};
 				}
 				return p;
-			})
+			});
 			setPosts(updatedPosts);
 			showToast("Success", data.message, "success");
 		} catch (error) {

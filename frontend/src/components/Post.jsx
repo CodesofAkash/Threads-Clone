@@ -5,15 +5,15 @@ import { formatDistanceToNow } from 'date-fns'
 import { DeleteIcon } from '@chakra-ui/icons'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import userAtom from '../atoms/userAtom'
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import useShowToast from '../hooks/useShowToast'
 import postsAtom from '../atoms/postsAtom'
 
-const Post = ({post}) => {
+const Post = memo(({post}) => {
   const navigate =  useNavigate();
   const currentUser = useRecoilValue(userAtom);
   const showToast = useShowToast();
-  const [ posts, setPosts ] = useRecoilState(postsAtom);
+  const [ , setPosts ] = useRecoilState(postsAtom);
   
   const user = post.postedBy;
  
@@ -55,7 +55,7 @@ const Post = ({post}) => {
           {post.replies.length === 2 && (
             <Box position={"relative"}>
               <Avatar size={"xs"} name={post.replies?.[0]?.username} src={post.replies?.[0]?.profilePic} pos={"absolute"} bottom={"0px"} right={"-5px"} padding={"2px"} />
-              <Avatar size={"xs"} name={post.replies?.[1]?.username} src={post.replies?.[0]?.profilePic} pos={"absolute"} bottom={"0px"} left={"4px"} padding={"2px"} />
+              <Avatar size={"xs"} name={post.replies?.[1]?.username} src={post.replies?.[1]?.profilePic} pos={"absolute"} bottom={"0px"} left={"4px"} padding={"2px"} />
             </Box>
           )}
           {post.replies.length > 2 && <Box position={"relative"} w={"full"}>
@@ -96,6 +96,8 @@ const Post = ({post}) => {
       </Flex>
     </Link>
   )
-}
+});
 
-export default Post
+Post.displayName = 'Post';
+
+export default Post;

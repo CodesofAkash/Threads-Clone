@@ -5,7 +5,7 @@ import User from "../models/userModel.js";
 
 const router = express.Router();
 
-router.get("/profile/:username", getUser);
+router.get("/profile/:username", userAuth, getUser);
 router.get("/suggested", userAuth, getSuggestedUsers);
 router.post("/signup", signupUser);
 router.post("/login", loginUser);
