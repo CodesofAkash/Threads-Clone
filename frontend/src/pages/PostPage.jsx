@@ -30,7 +30,9 @@ const PostPage = () => {
     const getPost = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/posts/${pid}`);
+        const res = await fetch(`${API_BASE_URL}/api/posts/${pid}`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");
@@ -54,6 +56,7 @@ const PostPage = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/posts/${pid}`, {
         method: "DELETE",
+        credentials: "include",
       });
       const data = await res.json();
       if(data.error) {

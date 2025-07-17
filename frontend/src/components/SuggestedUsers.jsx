@@ -3,32 +3,55 @@ import React, { useEffect, useState } from 'react'
 import SuggestedUser from './SuggestedUser';
 import useShowToast from '../hooks/useShowToast';
 import { API_BASE_URL } from '../config/api';
+import { useRecoilValue } from 'recoil';
+import userAtom from '../atoms/userAtom';
 
 const SuggestedUsers = () => {
 
     const [loading, setLoading] = useState(true);
     const [suggestedUsers, setSuggestedUsers] = useState([]);
+    const user = useRecoilValue(userAtom);
 
     const showToast = useShowToast();
 
     useEffect(() => {
         const getSuggestedUsers = async () => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
+            
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/users/suggested`);
+                const res = await fetch(`${API_BASE_URL}/api/users/suggested`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                });
                 const data = await res.json();
                 if(data.error) {
-                    showToast("Error", data.error, "error")
+                    showToast("Error", data.error, "error");
+                    setSuggestedUsers([]);
+                } else {
+                    // Ensure data is an array
+                    setSuggestedUsers(Array.isArray(data) ? data : []);
                 }
-                setSuggestedUsers(data);
             } catch (error) {
-                showToast("Error", error.message, "error")
+                showToast("Error", error.message, "error");
+                setSuggestedUsers([]);
             } finally {
                 setLoading(false);
             }
         };
         getSuggestedUsers();
-    }, [showToast])
+    }, [showToast, user])
+
+    const handleUserFollowed = (userId) => {
+        // Remove the followed user from the suggested list
+        setSuggestedUsers(prev => prev.filter(user => user._id !== userId));
+    };
 
   return (
     <>
@@ -52,9 +75,15 @@ const SuggestedUsers = () => {
                 </Flex>
             ))}
 
-            {!loading && suggestedUsers.map((user, i) => (
-                <SuggestedUser key={i} user={user} />
+            {!loading && Array.isArray(suggestedUsers) && suggestedUsers.length > 0 && suggestedUsers.map((user, i) => (
+                <SuggestedUser key={user._id || i} user={user} onUserFollowed={handleUserFollowed} />
             ))}
+            
+            {!loading && (!Array.isArray(suggestedUsers) || suggestedUsers.length === 0) && (
+                <Text textAlign="center" color="gray.500">
+                    No suggested users found
+                </Text>
+            )}
         </Flex>
     </>
   )

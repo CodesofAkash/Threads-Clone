@@ -27,6 +27,7 @@ const Post = memo(({post}) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/posts/${post._id}`, {
         method: "DELETE",
+        credentials: "include",
       });
       const data = await res.json();
       if(data.error) {

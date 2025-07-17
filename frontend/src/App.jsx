@@ -11,6 +11,7 @@ import userAtom from './atoms/userAtom'
 import { Navigate } from 'react-router-dom'
 import UpdateProfilePage from './pages/UpdateProfilePage'
 import SettingsPage from './pages/SettingsPage'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
 
@@ -20,18 +21,20 @@ function App() {
     <Box position={"relative"} w={"full"}>
         <Container maxW={pathname === '/' ? {base: "620px", md: "900px"} : "620px"}>
           <Header />
-          <Routes>
-            <Route path='/' element={user ? <HomePage /> : <Navigate to="/auth" />} />
-            <Route path='/auth' element={!user ? <AuthPage /> : <Navigate to="/" />} />
-            <Route path='/update' element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />} />
+          <ErrorBoundary>
+            <Routes>
+              <Route path='/' element={user ? <HomePage /> : <Navigate to="/auth" />} />
+              <Route path='/auth' element={!user ? <AuthPage /> : <Navigate to="/" />} />
+              <Route path='/update' element={user ? <UpdateProfilePage /> : <Navigate to="/auth" />} />
 
-            <Route path="/:username" element={user ? <UserPage /> : <Navigate to="/auth" />} />
-            <Route path="/:username/post/:pid" element={user ? <PostPage /> : <Navigate to="/auth" />} />
+              <Route path="/:username" element={user ? <UserPage /> : <Navigate to="/auth" />} />
+              <Route path="/:username/post/:pid" element={user ? <PostPage /> : <Navigate to="/auth" />} />
 
-            <Route path="/chat" element={user ? <ChatPage /> : <Navigate to="/auth" />} />
-            <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
+              <Route path="/chat" element={user ? <ChatPage /> : <Navigate to="/auth" />} />
+              <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
 
-          </Routes>
+            </Routes>
+          </ErrorBoundary>
       </Container>
       </Box>
   )

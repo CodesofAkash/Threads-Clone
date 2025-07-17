@@ -36,7 +36,12 @@ const theme = extendTheme({ config, styles, colors });
 ReactDOM.createRoot(document.getElementById("root")).render(
 	<React.StrictMode>
 		<RecoilRoot>
-			<BrowserRouter>
+			<BrowserRouter 
+				future={{
+					v7_startTransition: true,
+					v7_relativeSplatPath: true,
+				}}
+			>
 				<ChakraProvider theme={theme}>
 					<ColorModeScript initialColorMode={theme.config.initialColorMode} />
 					<SocketContextProvider>

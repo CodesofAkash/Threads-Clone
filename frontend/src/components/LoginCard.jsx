@@ -30,6 +30,7 @@ export default function LoginCard() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(inputs)
       });
 

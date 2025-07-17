@@ -2,27 +2,41 @@ import { Box, Flex, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import Post from "../components/Post";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import postsAtom from "../atoms/postsAtom";
 import SuggestedUsers from "../components/SuggestedUsers";
 import { API_BASE_URL } from "../config/api";
+import userAtom from "../atoms/userAtom";
 
 const HomePage = () => {
 	const [posts, setPosts] = useRecoilState(postsAtom);
 	const [loading, setLoading] = useState(true);
+	const user = useRecoilValue(userAtom);
 	const showToast = useShowToast();
+	
 	useEffect(() => {
 		const getFeedPosts = async () => {
+			if (!user) {
+				setLoading(false);
+				return;
+			}
+			
 			setLoading(true);
 			setPosts([]);
 			try {
-				const res = await fetch(`${API_BASE_URL}/api/posts/feed`);
+				const res = await fetch(`${API_BASE_URL}/api/posts/feed`, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					credentials: "include",
+				});
 				const data = await res.json();
 				if (data.error) {
 					showToast("Error", data.error, "error");
 					return;
 				}
-				setPosts(data.feedPosts);
+				setPosts(data.feedPosts || []);
 			} catch (error) {
 				showToast("Error", error.message, "error");
 			} finally {
@@ -30,7 +44,7 @@ const HomePage = () => {
 			}
 		};
 		getFeedPosts();
-	}, [showToast, setPosts]);
+	}, [showToast, setPosts, user]);
 
 	return (
 		<Flex gap='10' alignItems={"flex-start"}>

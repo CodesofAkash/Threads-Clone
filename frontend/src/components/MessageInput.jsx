@@ -31,6 +31,7 @@ const MessageInput = ({setMessages}) => {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({message, img: imgUrl, recipientId : selectedConversation.userId}),
         });
 

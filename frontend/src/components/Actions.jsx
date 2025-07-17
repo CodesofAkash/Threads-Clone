@@ -48,10 +48,11 @@ const Actions = ({ post }) => {
 		
 		try {
 			const res = await fetch(`${API_BASE_URL}/api/posts/like/${post?._id}`, {
-				method: "PUT",
+				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
+				credentials: "include",
 			});
 			const data = await res.json();
 			if(data.error) {
@@ -99,6 +100,7 @@ const Actions = ({ post }) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
+				credentials: "include",
 				body: JSON.stringify({message: reply})
 			});
 			const data = await res.json();

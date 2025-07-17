@@ -26,7 +26,9 @@ const UserPage = () => {
   useEffect( () => {
     const getUser = async  () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/users/profile/${username}`);
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/${username}`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");
@@ -36,7 +38,12 @@ const UserPage = () => {
           setUser(null);
           return;
         }
-        setUser(data.user.user);
+        // Ensure isFollowing field is included
+        const userWithFollowStatus = {
+          ...data.user.user,
+          isFollowing: data.user.user.isFollowing
+        };
+        setUser(userWithFollowStatus);
         setPosts(data.user.userPosts);
       } catch (error) {
         showToast("Error", error.message, "error");

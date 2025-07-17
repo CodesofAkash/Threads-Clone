@@ -37,6 +37,7 @@ export default function UpdateProfilePage() {
         headers: {
           'Content-Type': "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({...inputs, profilePic: imgUrl }),
         })
         const data = await res.json();

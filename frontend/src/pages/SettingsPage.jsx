@@ -16,7 +16,8 @@ const SettingsPage = () => {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
-                }
+                },
+                credentials: "include",
             })
             const data = await res.json();
             if(data.error) {

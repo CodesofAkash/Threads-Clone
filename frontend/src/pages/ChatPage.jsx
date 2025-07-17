@@ -31,7 +31,9 @@ const ChatPage = () => {
     const getConversations = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/messages/conversations`);
+        const res = await fetch(`${API_BASE_URL}/api/messages/conversations`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if(data.error) {
          showToast("Error", data.error, "error");
@@ -71,7 +73,9 @@ const ChatPage = () => {
     e?.preventDefault();
     setConvoLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/users/profile/${searchText}`);
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/${searchText}`, {
+          credentials: "include",
+        });
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");

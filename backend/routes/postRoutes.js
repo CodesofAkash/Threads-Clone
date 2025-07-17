@@ -9,7 +9,7 @@ router.get("/feed", userAuth, getFeedPosts);
 router.get("/:id", getPost);
 router.post("/create", userAuth, createPost);
 router.delete("/:id", userAuth, deletePost);
-router.get("/like/:id", userAuth, likePost);
+router.post("/like/:id", userAuth, likePost);
 router.post("/reply/:id", userAuth, replyPost);
 
 export default router;
