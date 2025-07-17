@@ -4,6 +4,7 @@ import {useRecoilState, useRecoilValue} from 'recoil'
 import userAtom from '../atoms/userAtom'
 import useShowToast from '../hooks/useShowToast.js'
 import postsAtom from '../atoms/postsAtom.js'
+import { API_BASE_URL } from '../config/api'
 
 const Actions = ({ post }) => {
 	const user = useRecoilValue(userAtom);
@@ -46,7 +47,12 @@ const Actions = ({ post }) => {
 		setLiked(!currentLiked);
 		
 		try {
-			const res = await fetch(`/api/posts/like/${post?._id}`);
+			const res = await fetch(`${API_BASE_URL}/api/posts/like/${post?._id}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
 			const data = await res.json();
 			if(data.error) {
 				// Rollback optimistic update
@@ -88,7 +94,7 @@ const Actions = ({ post }) => {
 		setReplyLoading(true);
 		e?.preventDefault();
 		try {
-			const res = await fetch(`/api/posts/reply/${post._id}`, {
+	  const res = await fetch(`${API_BASE_URL}/api/posts/reply/${post._id}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -177,28 +183,28 @@ const Actions = ({ post }) => {
 		</Flex>
 
 		<Modal
-        isOpen={isOpen}
-        onClose={onClose}
+		isOpen={isOpen}
+		onClose={onClose}
 		initialFocusRef={initialRef}
-        >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>What do you think</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <Input ref={initialRef} placeholder='Comment your thoughts' value={reply} onKeyDown={(e) => e.key === 'Enter' && handleReply(e)} onChange={(e) => setReply(e.target.value)} />
-            </FormControl>
-          </ModalBody>
+		>
+		<ModalOverlay />
+		<ModalContent>
+		  <ModalHeader>What do you think</ModalHeader>
+		  <ModalCloseButton />
+		  <ModalBody pb={6}>
+			<FormControl>
+			  <Input ref={initialRef} placeholder='Comment your thoughts' value={reply} onKeyDown={(e) => e.key === 'Enter' && handleReply(e)} onChange={(e) => setReply(e.target.value)} />
+			</FormControl>
+		  </ModalBody>
 
-          <ModalFooter>
-            <Button isLoading={replyLoading} colorScheme='blue' mr={3} size={"sm"} onClick={handleReply}>
-              Reply
-            </Button>
-            <Button onClick={onClose} size={"sm"} >Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+		  <ModalFooter>
+			<Button isLoading={replyLoading} colorScheme='blue' mr={3} size={"sm"} onClick={handleReply}>
+			  Reply
+			</Button>
+			<Button onClick={onClose} size={"sm"} >Cancel</Button>
+		  </ModalFooter>
+		</ModalContent>
+	  </Modal>
 
 	</Flex>
   )

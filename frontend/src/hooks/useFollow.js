@@ -2,6 +2,7 @@ import {useRecoilState} from 'recoil'
 import userAtom from '../atoms/userAtom.js'
 import { useState } from "react"
 import useShowToast from './useShowToast.js';
+import { API_BASE_URL } from '../config/api';
 
 const useFollow = (user) => {
 
@@ -19,7 +20,12 @@ const useFollow = (user) => {
         if(updating) return;
         setUpdating(true);
         try {
-            const res = await fetch(`/api/users/follow/${user?._id}`);
+            const res = await fetch(`${API_BASE_URL}/api/users/follow/${user?._id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
             const data = await res.json();
             if(data.error) {
                 showToast("Error", data.error, "error");

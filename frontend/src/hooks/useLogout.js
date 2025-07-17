@@ -1,6 +1,7 @@
 import { useSetRecoilState } from 'recoil';
 import useShowToast from './useShowToast'
 import userAtom from '../atoms/userAtom';
+import { API_BASE_URL } from '../config/api';
 
 const useLogout = () => {
     const showToast = useShowToast();
@@ -8,7 +9,7 @@ const useLogout = () => {
 
     const logout = async () => {
         try {
-            const res = await fetch("/api/users/logout", {
+            const res = await fetch(`${API_BASE_URL}/api/users/logout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

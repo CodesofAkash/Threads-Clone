@@ -6,6 +6,7 @@ import usePreviewImg from '../hooks/usePreviewImg';
 import useShowToast from '../hooks/useShowToast';
 import { Link } from 'react-router-dom'
 import { BsUpload } from 'react-icons/bs';
+import { API_BASE_URL } from '../config/api';
 
 export default function UpdateProfilePage() {
   const showToast = useShowToast();
@@ -31,7 +32,7 @@ export default function UpdateProfilePage() {
     if(updating) return;
     setUpdating(true);
     try {
-      const res = await fetch(`/api/users/update`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/update`, {
         method: "PUT",
         headers: {
           'Content-Type': "application/json",

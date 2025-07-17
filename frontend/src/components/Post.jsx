@@ -8,6 +8,7 @@ import userAtom from '../atoms/userAtom'
 import { useState, memo } from 'react'
 import useShowToast from '../hooks/useShowToast'
 import postsAtom from '../atoms/postsAtom'
+import { API_BASE_URL } from '../config/api'
 
 const Post = memo(({post}) => {
   const navigate =  useNavigate();
@@ -24,7 +25,7 @@ const Post = memo(({post}) => {
     if(!window.confirm("Are you sure you want to delete this post?")) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/posts/${post._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${post._id}`, {
         method: "DELETE",
       });
       const data = await res.json();

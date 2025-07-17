@@ -8,6 +8,7 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody,
 import  usePreviewImg from '../hooks/usePreviewImg'
 import { BsFillImageFill } from 'react-icons/bs'
 import postsAtom from '../atoms/postsAtom'
+import { API_BASE_URL } from '../config/api'
 
 const MAX_CHAR = 500;
 
@@ -61,7 +62,7 @@ const CreatePost = () => {
           if(loading) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/posts/create`, {
+            const res = await fetch(`${API_BASE_URL}/api/posts/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

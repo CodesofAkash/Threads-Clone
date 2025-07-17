@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns"
 import { useRecoilState, useRecoilValue } from "recoil"
 import userAtom from "../atoms/userAtom"
 import { DeleteIcon } from "@chakra-ui/icons"
+import { API_BASE_URL } from "../config/api"
 import postsAtom from "../atoms/postsAtom"
 
 const PostPage = () => {
@@ -29,7 +30,7 @@ const PostPage = () => {
     const getPost = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/posts/${pid}`);
+        const res = await fetch(`${API_BASE_URL}/api/posts/${pid}`);
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");
@@ -51,7 +52,7 @@ const PostPage = () => {
     if(!window.confirm("Are you sure you want to delete this post?")) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/posts/${pid}`, {
+      const res = await fetch(`${API_BASE_URL}/api/posts/${pid}`, {
         method: "DELETE",
       });
       const data = await res.json();

@@ -8,6 +8,7 @@ import useShowToast from '../hooks/useShowToast'
 import { conversationsAtom, selectedConversationAtom } from '../atoms/messagesAtom'
 import { useRecoilState, useRecoilValue } from 'recoil'
 import userAtom from '../atoms/userAtom'
+import { API_BASE_URL } from '../config/api'
 import { useSocket } from '../context/SocketContext'
 
 const ChatPage = () => {
@@ -30,7 +31,7 @@ const ChatPage = () => {
     const getConversations = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/messages/conversations`);
+        const res = await fetch(`${API_BASE_URL}/api/messages/conversations`);
         const data = await res.json();
         if(data.error) {
          showToast("Error", data.error, "error");
@@ -70,7 +71,7 @@ const ChatPage = () => {
     e?.preventDefault();
     setConvoLoading(true);
       try {
-        const res = await fetch(`/api/users/profile/${searchText}`);
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/${searchText}`);
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");

@@ -8,6 +8,7 @@ import { Text } from "@chakra-ui/react"
 import { useRecoilState, useRecoilValue } from "recoil"
 import postsAtom from "../atoms/postsAtom.js"
 import CreatePost from '../components/CreatePost.jsx'
+import { API_BASE_URL } from '../config/api'
 import userAtom from "../atoms/userAtom.js"
 
 
@@ -25,7 +26,7 @@ const UserPage = () => {
   useEffect( () => {
     const getUser = async  () => {
       try {
-        const res = await fetch(`/api/users/profile/${username}`);
+        const res = await fetch(`${API_BASE_URL}/api/users/profile/${username}`);
         const data = await res.json();
         if(data.error) {
           showToast("Error", data.error, "error");

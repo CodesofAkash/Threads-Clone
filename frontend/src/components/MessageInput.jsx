@@ -6,6 +6,7 @@ import { conversationsAtom, selectedConversationAtom } from '../atoms/messagesAt
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { BsFillImageFill } from 'react-icons/bs';
 import usePreviewImg from '../hooks/usePreviewImg.js'
+import { API_BASE_URL } from '../config/api'
 
 const MessageInput = ({setMessages}) => {
   const [message, setMessage] = useState("");
@@ -25,7 +26,7 @@ const MessageInput = ({setMessages}) => {
     if (!message.trim() && !imgUrl) return;
     setLoading(true);
       try {
-        const res = await fetch(`/api/messages/`, {
+        const res = await fetch(`${API_BASE_URL}/api/messages/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
