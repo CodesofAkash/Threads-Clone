@@ -23,8 +23,6 @@ export const getRecipientSocketId = (recipientId) => {
 const userSocketMap = {}
 
 io.on('connection', (socket) => {
-    console.log('user connected', socket.id);
-
     const userId = socket.handshake.query.userId;
     if(userId !== "undefined") userSocketMap[userId] = socket.id;
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
@@ -35,12 +33,11 @@ io.on('connection', (socket) => {
             await Conversation.updateOne({_id: conversationId}, {$set: {"lastMessage.seen": true}});
             io.to(userSocketMap[userId]).emit("messagesSeen", {conversationId});
         } catch (error) {
-            console.log(error);
+            // Handle error silently
         }
     })
 
     socket.on('disconnect', () => {
-        console.log("user disconnected", socket.id);
         delete userSocketMap[userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
     })

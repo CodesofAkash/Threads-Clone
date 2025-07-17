@@ -16,12 +16,10 @@ export const tokenManager = {
     return localStorage.getItem(TOKEN_KEY);
   },
 
-  // Remove token from localStorage
   removeToken: () => {
     localStorage.removeItem(TOKEN_KEY);
   },
 
-  // Get headers with token for API calls
   getAuthHeaders: () => {
     const token = tokenManager.getToken();
     const headers = {

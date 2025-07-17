@@ -51,7 +51,6 @@ export default function SignupCard() {
       showToast("Success", "Account created successfully!", "success");
       
     } catch (error) {
-      console.log(error);
       showToast("Error", "Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);

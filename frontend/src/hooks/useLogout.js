@@ -27,7 +27,6 @@ const useLogout = () => {
             setUser(null);
             showToast("Success", "Logged out successfully!", "success");
         } catch (error) {
-            console.log(error);
             // Even if API call fails, clear local data
             tokenManager.removeToken();
             localStorage.removeItem("user-threads");

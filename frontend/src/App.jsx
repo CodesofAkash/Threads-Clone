@@ -33,6 +33,7 @@ function App() {
               <Route path="/chat" element={user ? <ChatPage /> : <Navigate to="/auth" />} />
               <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/auth" />} />
 
+              <Route path="*" element={<Navigate to={user ? "/" : "/auth"} replace />} />
             </Routes>
           </ErrorBoundary>
       </Container>

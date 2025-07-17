@@ -10,7 +10,7 @@ export const userAuth = async (req, res, next) => {
         if (!token) {
             const authHeader = req.headers.authorization;
             if (authHeader && authHeader.startsWith('Bearer ')) {
-                token = authHeader.substring(7); // Remove "Bearer " prefix
+                token = authHeader.substring(7);
             }
         }
         
@@ -28,7 +28,6 @@ export const userAuth = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error("Auth middleware error:", error);
         return res.status(401).json({ error: "Unauthorized: Invalid token" });
     }
 }

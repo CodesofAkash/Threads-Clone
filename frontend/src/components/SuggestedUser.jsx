@@ -9,7 +9,6 @@ const SuggestedUser = ({user, onUserFollowed}) => {
     const handleFollowClick = async () => {
         const result = await followUser();
         if (result && result.isFollowing && onUserFollowed) {
-            // Remove user from suggested list when followed
             onUserFollowed(result.userId);
         }
     };

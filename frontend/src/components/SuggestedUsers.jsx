@@ -48,7 +48,6 @@ const SuggestedUsers = () => {
     }, [showToast, user])
 
     const handleUserFollowed = (userId) => {
-        // Remove the followed user from the suggested list
         setSuggestedUsers(prev => prev.filter(user => user._id !== userId));
     };
 

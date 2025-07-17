@@ -64,6 +64,4 @@ app.use("/api/messages", messageRoutes);
 // For Vercel serverless functions
 
 
-server.listen(PORT, () => {
-  console.log(`Server is running on PORT http://localhost:${PORT}`);
-});
+server.listen(PORT);

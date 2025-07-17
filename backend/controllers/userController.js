@@ -52,7 +52,6 @@ const getUser = async (req, res) => {
 
     return res.status(200).json({user : {user: userObj, userPosts}});
   } catch (error) {
-    console.error("Error during get user:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -117,7 +116,6 @@ const signupUser = async (req, res) => {
     }
 
   } catch (error) {
-    console.error("Error during signup:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -153,7 +151,6 @@ const loginUser = async (req, res) => {
       message: "Login successful"
     });
   } catch (error) {
-    console.error("Error during login:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -163,7 +160,6 @@ const logoutUser = async (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: true });
     return res.status(200).json({ message: "User logged out successfully" });
   } catch (error) {
-    console.error("Error during logout:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -221,7 +217,6 @@ const followUser = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error during follow:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -270,7 +265,6 @@ const updateUser = async (req, res) => {
     user.password = null;
     return res.status(200).json({user});
   } catch (error) {
-    console.error("Error during user update:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

@@ -49,7 +49,6 @@ export default function LoginCard() {
       showToast("Success", "Login successful!", "success");
       
     } catch (error) {
-      console.log(error);
       showToast("Error", "Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);

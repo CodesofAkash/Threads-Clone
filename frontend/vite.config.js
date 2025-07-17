@@ -6,6 +6,5 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    // Removed proxy since we're using API_BASE_URL directly
   }
 })
