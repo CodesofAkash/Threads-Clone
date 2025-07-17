@@ -6,11 +6,7 @@ import useShowToast from './useShowToast.js';
 const useFollow = (user) => {
 
     const [currentUser, setCurrentUser] = useRecoilState(userAtom);
-    const [followed, setFollowed] = useState(
-        user?.isFollowing !== undefined 
-            ? user.isFollowing 
-            : user?.followers.includes(currentUser?._id)
-    );
+    const [followed, setFollowed] = useState(user?.followers.includes(currentUser?._id));
     const [updating, setUpdating] = useState(false);
 
     const showToast = useShowToast()
@@ -22,7 +18,6 @@ const useFollow = (user) => {
         }
         if(updating) return;
         setUpdating(true);
-        
         try {
             const res = await fetch(`/api/users/follow/${user?._id}`);
             const data = await res.json();
@@ -31,20 +26,15 @@ const useFollow = (user) => {
                 return;
             }
 
-            // Update the user data with backend response
-            if(data.userToFollow) {
-                user.followers = data.userToFollow.followers;
+            if(followed) {
+                showToast("Success", `Unfollowed ${user.name}`, "success");
+                user.followers.pop();
+            } else {
+                showToast("Success", `Followed ${user.name}`, "success");
+                user.followers.push(currentUser?._id);
             }
-            
-            // Update current user state with backend response
-            if(data.currentUser) {
-                setCurrentUser(data.currentUser);
-            }
-            
-            // Update local state
-            setFollowed(data.isFollowing);
-            
-            showToast("Success", data.message, "success");
+
+            setFollowed(!followed);
         } catch (error) {
             showToast("Error", error.message, "error");
         } finally {
