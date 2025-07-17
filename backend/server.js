@@ -38,7 +38,8 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5000',
-      'https://your-production-domain.com' // Replace with your actual domain
+      'https://threads-clone-production-489e.up.railway.app',
+      'https://threads-clone--codesofakash.vercel.app',
     ];
     
     if (allowedOrigins.includes(origin)) {
