@@ -2,9 +2,9 @@ import { Box, Flex, Skeleton, SkeletonCircle, Text } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import SuggestedUser from './SuggestedUser';
 import useShowToast from '../hooks/useShowToast';
-import { API_BASE_URL } from '../config/api';
 import { useRecoilValue } from 'recoil';
 import userAtom from '../atoms/userAtom';
+import apiRequest from '../utils/apiRequest';
 
 const SuggestedUsers = () => {
 
@@ -23,13 +23,12 @@ const SuggestedUsers = () => {
             
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/users/suggested`, {
+                const res = await apiRequest('/api/users/suggested', {
                     method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
                 });
+                
+                if (!res) return; // Handle unauthorized
+                
                 const data = await res.json();
                 if(data.error) {
                     showToast("Error", data.error, "error");

@@ -107,7 +107,11 @@ const signupUser = async (req, res) => {
     if (newUser) {
       const token = generateTokenAndSetCookie(newUser._id, res);
       newUser.password = null;
-      return res.status(201).json({newUser});
+      return res.status(201).json({
+        newUser,
+        token, // Include token in response for production fallback
+        message: "User created successfully"
+      });
     } else {
       return res.status(400).json({ error: "Invalid user data" });
     }
@@ -143,7 +147,11 @@ const loginUser = async (req, res) => {
     }
   
     user.password = null;
-    return res.status(200).json({user});
+    return res.status(200).json({
+      user,
+      token, // Include token in response for production fallback
+      message: "Login successful"
+    });
   } catch (error) {
     console.error("Error during login:", error);
     return res.status(500).json({ error: "Internal server error" });

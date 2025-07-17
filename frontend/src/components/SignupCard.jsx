@@ -6,6 +6,7 @@ import authScreenAtom from '../atoms/authAtom'
 import useShowToast from '../hooks/useShowToast'
 import userAtom from '../atoms/userAtom'
 import { API_BASE_URL } from '../config/api'
+import tokenManager from '../utils/tokenManager'
 
 export default function SignupCard() {
   const showToast = useShowToast();
@@ -29,9 +30,7 @@ export default function SignupCard() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/signup`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: tokenManager.getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify(inputs)
       });
@@ -42,11 +41,18 @@ export default function SignupCard() {
         return;
       }
 
+      // Store token if provided
+      if (data.token) {
+        tokenManager.setToken(data.token);
+      }
+
       localStorage.setItem("user-threads", JSON.stringify(data.newUser));
       setUser(data.newUser);
+      showToast("Success", "Account created successfully!", "success");
       
     } catch (error) {
       console.log(error);
+      showToast("Error", "Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }

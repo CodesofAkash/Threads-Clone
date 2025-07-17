@@ -6,6 +6,7 @@ import { useSetRecoilState } from 'recoil'
 import useShowToast from '../hooks/useShowToast'
 import userAtom from '../atoms/userAtom'
 import { API_BASE_URL } from '../config/api'
+import tokenManager from '../utils/tokenManager'
 
 export default function LoginCard() {
   const showToast = useShowToast();
@@ -27,13 +28,10 @@ export default function LoginCard() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: tokenManager.getAuthHeaders(),
         credentials: "include",
         body: JSON.stringify(inputs)
       });
-
       const data = await res.json();
       
       if(data.error) {
@@ -41,11 +39,18 @@ export default function LoginCard() {
         return;
       }
 
+      // Store token if provided
+      if (data.token) {
+        tokenManager.setToken(data.token);
+      }
+
       localStorage.setItem("user-threads", JSON.stringify(data.user));
       setUser(data.user);
+      showToast("Success", "Login successful!", "success");
       
     } catch (error) {
       console.log(error);
+      showToast("Error", "Something went wrong. Please try again.", "error");
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,7 @@ import {useRecoilState} from 'recoil'
 import userAtom from '../atoms/userAtom.js'
 import { useState, useEffect } from "react"
 import useShowToast from './useShowToast.js';
-import { API_BASE_URL } from '../config/api';
+import apiRequest from '../utils/apiRequest.js';
 
 const useFollow = (user) => {
 
@@ -36,13 +36,12 @@ const useFollow = (user) => {
         if(updating) return;
         setUpdating(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/users/follow/${user?._id}`, {
+            const res = await apiRequest(`/api/users/follow/${user?._id}`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include",
             });
+            
+            if (!res) return; // Handle unauthorized
+            
             const data = await res.json();
             if(data.error) {
                 showToast("Error", data.error, "error");
